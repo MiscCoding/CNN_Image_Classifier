@@ -149,6 +149,7 @@ def get_pet_labels(image_dir):
     
     # Processes each of the files to create a dictionary where the key
     # is the filename and the value is the picture label (below).
+   
  
     # Creates empty dictionary for the labels
     petlabels_dic = dict()

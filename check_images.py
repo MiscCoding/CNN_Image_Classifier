@@ -43,7 +43,7 @@ def main():
     # TODO: 3. Define get_pet_labels() function to create pet image labels by
     # creating a dictionary with key=filename and value=file label to be used
     # to check the accuracy of the classifier function
-    answers_dic = get_pet_labels()
+    answers_dic = get_pet_labels(in_arg.dir)
 
     # TODO: 4. Define classify_images() function to create the classifier 
     # labels with the classifier function uisng in_arg.arch, comparing the 
@@ -109,7 +109,27 @@ def get_input_args():
     
 
 
-def get_pet_labels():
+def get_pet_labels(dirPath):
+    filename_list = listdir(dirPath)
+    
+    petlabels_dic = dict()
+    tempLabel = []
+    for idx in range(0, len(filename_list), 1):
+        if filename_list[idx][0] != ".":
+          tempLabel = filename_list.split("_")[0]
+          if filename_list[idx] not in petLabels_dic:
+                petLabels_dic[filename_list[idx]] = tempLabel
+          else:
+            print("Duplicate file names {}".format(filename_list[idx])
+    
+    return (petlabels_dic)
+                
+           
+           
+           
+        
+        
+    
     """
     Creates a dictionary of pet labels based upon the filenames of the image 
     files. Reads in pet filenames and extracts the pet image labels from the 
@@ -122,7 +142,7 @@ def get_pet_labels():
      petlabels_dic - Dictionary storing image filename (as key) and Pet Image
                      Labels (as value)  
     """
-    pass
+    
 
 
 def classify_images():
