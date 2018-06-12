@@ -48,7 +48,7 @@ def main():
     # TODO: 4. Define classify_images() function to create the classifier 
     # labels with the classifier function uisng in_arg.arch, comparing the 
     # labels, and creating a dictionary of results (result_dic)
-    result_dic = classify_images()
+    result_dic = classify_images(in_arg.dir, answers_dic, in_arg.arch)
     
     # TODO: 5. Define adjust_results4_isadog() function to adjust the results
     # dictionary(result_dic) to determine if classifier correctly classified
@@ -113,12 +113,12 @@ def get_pet_labels(dirPath):
     filename_list = listdir(dirPath)
     
     petlabels_dic = dict()
-    tempLabel = []
+    dogName = []
     for idx in range(0, len(filename_list), 1):
         if filename_list[idx][0] != ".":
-          tempLabel = filename_list.split("_")[0]
+          dogName = filename_list.split("_")[0]
           if filename_list[idx] not in petLabels_dic:
-                petLabels_dic[filename_list[idx]] = tempLabel
+                petLabels_dic[filename_list[idx]] = dogName
           else:
             print("Duplicate file names {}".format(filename_list[idx])
     
@@ -145,7 +145,46 @@ def get_pet_labels(dirPath):
     
 
 
-def classify_images():
+def classify_images(images_dir, petlabel_dic, model):
+                  
+                  results_dic = dict()
+      
+                  for filename, value in petlabel_dic.item():
+                        tempValue = {}
+                        imgPath = "./" + "/".join(images_dir, filename)
+                        imgClass = classifier(imgPath, model)
+                        imgClass = imgClass.lower().strip()
+                  
+                        truth = petlabel_dic[filename]
+                        found = imgClass.find(truth)
+                  
+                        if found >= 0:
+                               if ( (found == 0 and len(truth)==len(model_label)) or
+                                    (  ( (found == 0) or (model_label[found - 1] == " ") )  and
+                                       ( (found + len(truth) == len(model_label)) or   
+                                          (model_label[found + len(truth): found+len(truth)+1] in 
+                                         (","," ") ) 
+                                       )      
+                                    )
+                                  ):
+                        
+                        
+                                    if filename not in results_dic:
+                                        results_dic[filename] = [value, imgClass, 1]
+                        else:
+                            if filename not in results_dic:
+                                        results_dic[filename] = [value, imgClass, 0]
+                      
+           
+          return results_dic
+                    
+                  
+                        
+                        
+                        
+                        
+                        
+                  
     """
     Creates classifier labels with classifier function, compares labels, and 
     creates a dictionary containing both labels and comparison of them to be
@@ -170,7 +209,8 @@ def classify_images():
                     idx 2 = 1/0 (int)   where 1 = match between pet image and 
                     classifer labels and 0 = no match between labels
     """
-    pass
+        
+              
 
 
 def adjust_results4_isadog():
