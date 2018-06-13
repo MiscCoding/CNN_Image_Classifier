@@ -50,11 +50,31 @@ def main():
     # labels, and creating a dictionary of results (result_dic)
     result_dic = classify_images(in_arg.dir, answers_dic, in_arg.arch)
     
+    
+    print("\n       MATCH:")
+    n_match = 0
+    n_notmatch = 0
+    for key in result_dic:
+        if result_dic[key][2] == 1:
+            n_match += 1;
+            print("Real : %-26s  Classifier: %-30s" % (result_dic[key][0],
+                                                       result_dic[key][1]))
+    
+    print("\n NOT A MATCH:")
+    for key in result_dic:
+        if result_dic[key][2] == 0:
+            n_notmatch += 1;
+            print("Real : %-26s  Classifier: %-30s" % (result_dic[key][0],
+                                                       result_dic[key][1]))
+                  
+    print("\n # Total images", n_match + n_notmatch, "# matches: ", 
+          n_match, "# not matches: ", n_notmatch)
+            
     # TODO: 5. Define adjust_results4_isadog() function to adjust the results
     # dictionary(result_dic) to determine if classifier correctly classified
     # images as 'a dog' or 'not a dog'. This demonstrates if the model can
     # correctly classify dog images as dogs (regardless of breed)
-    adjust_results4_isadog()
+    adjust_results4_isadog(result_dic, in_arg.dogfile)
 
     # TODO: 6. Define calculates_results_stats() function to calculate
     # results of run and puts statistics in a results statistics
@@ -110,19 +130,53 @@ def get_input_args():
 
 
 def get_pet_labels(dirPath):
-    filename_list = listdir(dirPath)
+    in_files = listdir(dirPath)
     
+    # Processes each of the files to create a dictionary where the key
+    # is the filename and the value is the picture label (below).
+ 
+    # Creates empty dictionary for the labels
     petlabels_dic = dict()
-    dogName = []
-    for idx in range(0, len(filename_list), 1):
-        if filename_list[idx][0] != ".":
-          dogName = filename_list.split("_")[0]
-          if filename_list[idx] not in petLabels_dic:
-                petLabels_dic[filename_list[idx]] = dogName
-          else:
-            print("Duplicate file names {}".format(filename_list[idx])
-    
-    return (petlabels_dic)
+   
+    # Processes through each file in the directory, extracting only the words
+    # of the file that contain the pet image label
+    for idx in range(0, len(in_files), 1):
+       
+       # Skips file if starts with . (like .DS_Store of Mac OSX) because it 
+       # isn't an pet image file
+       if in_files[idx][0] != ".":
+           
+           # Uses split to extract words of filename into list image_name 
+           image_name = in_files[idx].split("_")
+       
+           # Creates temporary label variable to hold pet label name extracted 
+           pet_label = ""
+           
+           # Processes each of the character strings(words) split by '_' in 
+           # list image_name by processing each word - only adding to pet_label
+           # if word is all letters - then process by putting blanks between 
+           # these words and putting them in all lowercase letters
+           for word in image_name:
+               
+               # Only add to pet_label if word is all letters add blank at end
+               if word.isalpha():
+                   pet_label += word.lower() + " "
+                   
+           # strips off trailing whitespace
+           pet_label = pet_label.strip()
+           
+           # If filename doesn't already exist in dictionary add it and it's
+           # pet label - otherwise print an error message because indicates 
+           # duplicate files (filenames)
+           if in_files[idx] not in petlabels_dic:
+              petlabels_dic[in_files[idx]] = pet_label
+              
+           else:
+               print("Warning: Duplicate files exist in directory", 
+                     in_files[idx])
+ 
+    # returns dictionary of labels
+    return(petlabels_dic)
                 
            
            
@@ -146,38 +200,56 @@ def get_pet_labels(dirPath):
 
 
 def classify_images(images_dir, petlabel_dic, model):
-                  
-                  results_dic = dict()
-      
-                  for filename, value in petlabel_dic.item():
-                        tempValue = {}
-                        imgPath = "./" + "/".join(images_dir, filename)
-                        imgClass = classifier(imgPath, model)
-                        imgClass = imgClass.lower().strip()
-                  
-                        truth = petlabel_dic[filename]
-                        found = imgClass.find(truth)
-                  
-                        if found >= 0:
-                               if ( (found == 0 and len(truth)==len(model_label)) or
-                                    (  ( (found == 0) or (model_label[found - 1] == " ") )  and
-                                       ( (found + len(truth) == len(model_label)) or   
-                                          (model_label[found + len(truth): found+len(truth)+1] in 
-                                         (","," ") ) 
-                                       )      
-                                    )
-                                  ):
-                        
-                        
-                                    if filename not in results_dic:
-                                        results_dic[filename] = [value, imgClass, 1]
-                        else:
-                            if filename not in results_dic:
-                                        results_dic[filename] = [value, imgClass, 0]
-                      
-           
-          return results_dic
-                    
+
+    results_dic = dict()
+
+    # Process all files in the petlabels_dic - use images_dir to give fullpath
+    for key in petlabel_dic:
+       
+       # Runs classifier function to classify the images classifier function 
+       # inputs: path + filename  and  model, returns model_label 
+       # as classifier label
+       pathDog = "./" + images_dir +"/" + key
+       model_label = classifier(pathDog, model)
+       
+       # Processes the results so they can be compared with pet image labels
+       # set labels to lowercase (lower) and stripping off whitespace(strip)
+       model_label = model_label.lower()
+       model_label = model_label.strip()
+       
+       # defines truth as pet image label and trys to find it using find() 
+       # string function to find it within classifier label(model_label).
+       truth = petlabel_dic[key]
+       found = model_label.find(truth)
+       
+       # If found (0 or greater) then make sure true answer wasn't found within
+       # another word and thus not really found, if truely found then add to 
+       # results dictionary and set match=1(yes) otherwise as match=0(no)
+       if found >= 0:
+           if ( (found == 0 and len(truth)==len(model_label)) or
+                (  ( (found == 0) or (model_label[found - 1] == " ") )  and
+                   ( (found + len(truth) == len(model_label)) or   
+                      (model_label[found + len(truth): found+len(truth)+1] in 
+                     (","," ") ) 
+                   )      
+                )
+              ):
+               # found label as stand-alone term (not within label)
+               if key not in results_dic:
+                   results_dic[key] = [truth, model_label, 1]
+                   
+           # found within a word/term not a label existing on its own 
+           else:
+               if key not in results_dic:
+                   results_dic[key] = [truth, model_label, 0]
+                   
+       # if not found set results dictionary with match=0(no)
+       else:
+           if key not in results_dic:
+               results_dic[key] = [truth, model_label, 0]
+               
+    # Return results dictionary
+    return(results_dic)
                   
                         
                         
@@ -213,7 +285,38 @@ def classify_images(images_dir, petlabel_dic, model):
               
 
 
-def adjust_results4_isadog():
+def adjust_results4_isadog(result_dic, dogsfile):
+    dog_name_dic = dict()
+                  
+    with open(dogsfile, "r") as infile:
+        line = infile.readline()
+                        
+        while line != "":
+            line = line.rstrip()
+            if line not in dog_name_dic:
+                dog_name_dic[line] = 1
+            else:
+                print("# Warning : Duplicate dog names ")
+                  
+            line = infile.readline()
+                  
+                  
+    for key in result_dic:
+        if result_dic[key][0] in dog_name_dic:
+            if result_dic[key][1] in dog_name_dic:
+                result_dic[key].extend((1,1))
+            else:
+                result_dic[key].extend((1,0))
+                  
+        else:
+            if result_dic[key][1] in dog_name_dic:
+                result_dic[key].extend((0,1))
+            else:
+                result_dic[key].extend((0,0))
+                            
+                    
+                  
+                  
     """
     Adjusts the results dictionary to determine if classifier correctly 
     classified images 'as a dog' or 'not a dog' especially when not a match. 
@@ -241,7 +344,7 @@ def adjust_results4_isadog():
     Returns:
            None - results_dic is mutable data type so no return needed.
     """           
-    pass
+    
 
 
 def calculates_results_stats():
