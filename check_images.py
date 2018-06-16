@@ -83,7 +83,7 @@ def main():
 
     # TODO: 7. Define print_results() function to print summary results, 
     # incorrect classifications of dogs and breeds if requested.
-    print_results()
+    print_results(result_dic, results_stats_dic, in_arg.arch)
 
     # TODO: 1. Define end_time to measure total program runtime
     # by collecting end time
@@ -438,7 +438,7 @@ def print_results(results_dic, results_stats, model, print_incorrect_dogs = Fals
             if sum(results_dic[key][3:]) == 1:
                 print("Real: %-26s Classifier: %-30s" % (results_dic[key][0], results_dic[key][1]))
     
-    if (print_incorrect_breed and (results_stats["n_correct_dogs"] != results_stats["n_correct_breed"])):
+    if (print_incorrect_breeds and (results_stats["n_correct_dogs"] != results_stats["n_correct_breed"])):
         print("\n Incorrect dog breed assignment")
         
         for key in results_dic:
