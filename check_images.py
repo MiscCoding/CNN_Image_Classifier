@@ -418,7 +418,34 @@ def calculates_results_stats(results_dic):
     
 
 
-def print_results():
+def print_results(results_dic, results_stats, model, print_incorrect_dogs = False, print_incorrect_breeds = False):
+    print("\n\n*** Results Summary for CNN Model Architecture", model.upper(), "***")
+    print("%20s: %3d" % ("N Images", results_stats["n_images"]))
+    print("%20s: %3d" % ("N Dog Images", results_stats["n_dogs_img"]))
+    print("%20s: %3d" % ("N Not-Dog Images", results_stats["n_notdogs_img"]))
+    
+    
+    print("   ")
+    for key in results_stats:
+        if key[0] == "p":
+            print("%20s: %5.1f" % (key, results_stats[key]))
+            
+    
+    if (print_incorrect_dogs and ((results_stats["n_correct_dogs"] + results_stats["n_correct_notdogs"]) != results_stats["n_images"])):
+        print("\n Correct Dog/Not Dog assignment")
+        
+        for key in results_dic:
+            if sum(results_dic[key][3:]) == 1:
+                print("Real: %-26s Classifier: %-30s" % (results_dic[key][0], results_dic[key][1]))
+    
+    if (print_incorrect_breed and (results_stats["n_correct_dogs"] != results_stats["n_correct_breed"])):
+        print("\n Incorrect dog breed assignment")
+        
+        for key in results_dic:
+            if(sum(results_dic[key][3:]) == 2 and results[key][2] == 0):
+                print("Real: %-26s            Classifier: %-30s" % (results_dic[key][0], results_dic[key][1]))
+               
+               
     """
     Prints summary results on the classification and then prints incorrectly 
     classified dogs and incorrectly classified dog breeds if user indicates 
@@ -447,7 +474,7 @@ def print_results():
     Returns:
            None - simply printing results.
     """    
-    pass
+    
 
                 
                 
